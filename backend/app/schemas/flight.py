@@ -1,13 +1,7 @@
-"""Flight schema definitions.
-
-These Pydantic models are used for request/response validation.
-"""
-
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import List
 
-class Flight(BaseModel):
+class FlightBase(BaseModel):
     flight_number: str
     departure_airport: str
     arrival_airport: str
@@ -15,5 +9,12 @@ class Flight(BaseModel):
     arrival_time: datetime
     price: float
 
-class FlightSearchResponse(BaseModel):
-    flights: List[Flight]
+class FlightCreate(FlightBase):
+    airline_id: int
+
+class FlightRead(FlightBase):
+    id: int
+    airline_id: int
+
+    class Config:
+        orm_mode = True

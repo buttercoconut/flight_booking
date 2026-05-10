@@ -1,31 +1,22 @@
-"""Payment router.
-
-Provides a stub endpoint for processing payments. In a real application
-this would integrate with a payment gateway such as Stripe or PayPal.
-"""
-
-from fastapi import APIRouter, HTTPException
-from uuid import uuid4
-
-from ..schemas.payment import PaymentRequest, PaymentResponse
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from ..services.payment_service import PaymentService
+from ..schemas.payment import PaymentCreate, PaymentRead
 
 router = APIRouter()
 
-@router.post("/payments", response_model=PaymentResponse)
-async def process_payment(payment: PaymentRequest):
-    """Simulate payment processing.
+# Dependency to get DB session
+from ..database import get_db
 
-    The endpoint simply returns a success response with a mock transaction
-    ID. Replace this logic with real payment gateway integration.
-    """
-    # Basic validation – ensure amount is positive
-    if payment.amount <= 0:
-        raise HTTPException(status_code=400, detail="Amount must be positive")
+@router.post("/", response_model=PaymentRead)
+async def pay(payment_in: PaymentCreate, db: Session = Depends(get_db)):
+    service = PaymentService(db)
+    return service.process_payment(payment_in)
 
-    transaction_id = str(uuid4())
-    return PaymentResponse(
-        transaction_id=transaction_id,
-        status="success",
-        amount=payment.amount,
-        currency=payment.currency,
-    )
+@router.get("/{booking_id}")
+async def get_payment(booking_id: int, db: Session = Depends(get_db)):
+    service = PaymentService(db)
+    payment = service.db.query(Payment).filter(Payment.booking_id == booking_id).first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    return payment

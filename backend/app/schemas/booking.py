@@ -1,15 +1,15 @@
-"""Booking schema definitions.
-"""
+from pydantic import BaseModel
 
-from pydantic import BaseModel, Field
-from typing import Optional
+class BookingBase(BaseModel):
+    flight_id: int
+    seat_number: str
 
-class BookingCreate(BaseModel):
-    flight_id: str
-    passenger_name: str
-    passenger_email: str
-    seat_preference: Optional[str] = None
+class BookingCreate(BookingBase):
+    pass
 
-class BookingResponse(BookingCreate):
-    id: str
-    status: str = Field(default="confirmed")
+class BookingRead(BookingBase):
+    id: int
+    status: str
+
+    class Config:
+        orm_mode = True

@@ -1,16 +1,16 @@
-"""Payment schema definitions.
-"""
+from pydantic import BaseModel
 
-from pydantic import BaseModel, Field
-from typing import Literal
-
-class PaymentRequest(BaseModel):
+class PaymentBase(BaseModel):
+    booking_id: int
     amount: float
-    currency: str = Field(default="USD")
-    payment_method: str
+    method: str
 
-class PaymentResponse(BaseModel):
-    transaction_id: str
-    status: Literal["success", "failed"]
-    amount: float
-    currency: str
+class PaymentCreate(PaymentBase):
+    pass
+
+class PaymentRead(PaymentBase):
+    id: int
+    status: str
+
+    class Config:
+        orm_mode = True
