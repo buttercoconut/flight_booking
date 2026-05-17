@@ -1,20 +1,21 @@
-from sqlalchemy.orm import Session
-from ..models.booking import Booking
-from ..schemas.booking import BookingCreate, BookingRead
+from datetime import datetime
+from typing import List
 
-class BookingService:
-    def __init__(self, db: Session):
-        self.db = db
+from app.models.models import Booking
+from app.schemas.schemas import BookingCreateRequest
 
-    def create_booking(self, booking_in: BookingCreate) -> BookingRead:
-        booking = Booking(**booking_in.dict())
-        self.db.add(booking)
-        self.db.commit()
-        self.db.refresh(booking)
-        return booking
+# In-memory booking store
+bookings: List[Booking] = []
 
-    def get_booking(self, booking_id: int) -> BookingRead | None:
-        return self.db.query(Booking).filter(Booking.id == booking_id).first()
-
-    def list_bookings(self, user_id: int):
-        return self.db.query(Booking).filter(Booking.user_id == user_id).all()
+async def create_booking(request: BookingCreateRequest) -> Booking:
+    new_id = len(bookings) + 1
+    booking = Booking(
+        id=new_id,
+        user_id=request.user_id,
+        flight_id=request.flight_id,
+        passengers=request.passengers,
+        status="confirmed",
+        created_at=datetime.utcnow(),
+    )
+    bookings.append(booking)
+    return booking

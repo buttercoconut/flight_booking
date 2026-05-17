@@ -1,24 +1,29 @@
 <template>
-  <div class="flight-search-form">
-    <h2>Search Flights</h2>
+  <div class="flight-search">
+    <h2>항공편 검색</h2>
     <form @submit.prevent="searchFlights">
-      <div>
-        <label for="origin">Origin:</label>
-        <input id="origin" v-model="origin" required />
-      </div>
-      <div>
-        <label for="destination">Destination:</label>
-        <input id="destination" v-model="destination" required />
-      </div>
-      <div>
-        <label for="date">Date:</label>
-        <input id="date" type="date" v-model="date" required />
-      </div>
-      <button type="submit">Search</button>
+      <label>
+        출발지:
+        <input v-model="search.from" required />
+      </label>
+      <label>
+        도착지:
+        <input v-model="search.to" required />
+      </label>
+      <label>
+        날짜:
+        <input type="date" v-model="search.date" required />
+      </label>
+      <label>
+        승객 수:
+        <input type="number" v-model.number="search.passengers" min="1" required />
+      </label>
+      <button type="submit">검색</button>
     </form>
     <ul v-if="flights.length">
       <li v-for="flight in flights" :key="flight.id">
-        {{ flight.airline }} - {{ flight.flightNumber }} - {{ flight.departureTime }}
+        {{ flight.airline }} {{ flight.flight_number }} - {{ flight.departure_time }} → {{ flight.arrival_time }}
+        <button @click="selectFlight(flight)">선택</button>
       </li>
     </ul>
   </div>
@@ -26,25 +31,24 @@
 
 <script setup>
 import { ref } from 'vue'
-import { getFlights } from '../api/flight'
+import { searchFlightsApi } from '../api/flight.js'
+import { useRouter } from 'vue-router'
 
-const origin = ref('')
-const destination = ref('')
-const date = ref('')
+const router = useRouter()
+const search = ref({ from: '', to: '', date: '', passengers: 1 })
 const flights = ref([])
 
 const searchFlights = async () => {
-  const result = await getFlights({ origin: origin.value, destination: destination.value, date: date.value })
-  flights.value = result.data
+  const res = await searchFlightsApi(search.value)
+  flights.value = res.data
+}
+
+const selectFlight = (flight) => {
+  router.push({ name: 'Booking', query: { flightId: flight.id } })
 }
 </script>
 
 <style scoped>
-.flight-search-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-.flight-search-form form > div {
-  margin-bottom: 10px;
-}
+.flight-search { max-width: 600px; margin: auto; }
+label { display: block; margin: 0.5rem 0; }
 </style>

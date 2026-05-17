@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-const API_BASE = 'http://localhost:8000/api'
+const API_BASE = '/api/flight'
 
-export const getFlights = async (params) => {
-  return axios.get(`${API_BASE}/flights/`, { params })
+export const searchFlightsApi = async (params) => {
+  return axios.get(`${API_BASE}/search`, { params })
 }
